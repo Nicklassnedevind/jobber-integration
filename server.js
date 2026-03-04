@@ -33,3 +33,32 @@ app.get("/clients", async (req, res) => {
 });
 
 app.listen(3000, () => console.log("Server running"));
+app.get("/connect", (req, res) => {
+  const redirectUri = "https://your-app-name.onrender.com/oauth/callback";
+
+  const url = `https://api.getjobber.com/api/oauth/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code`;
+
+  res.redirect(url);
+});
+app.get("/oauth/callback", async (req, res) => {
+  const code = req.query.code;
+
+  const response = await fetch("https://api.getjobber.com/api/oauth/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      client_id: process.env.CLIENT_ID,
+      client_secret: process.env.CLIENT_SECRET,
+      grant_type: "authorization_code",
+      code: code,
+      redirect_uri: "https://your-app-name.onrender.com/oauth/callback"
+    })
+  });
+
+  const data = await response.json();
+
+  // For now, just display the token
+  res.json(data);
+});
